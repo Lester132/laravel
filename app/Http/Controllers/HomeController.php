@@ -60,7 +60,7 @@ class HomeController extends Controller
      */
     public function contactpage()
     {
-        return view('contact.contactpage'); // Ensure the contact.contactpage view exists
+        return view('contact.contactpage');
     }
 
     /**
@@ -88,12 +88,7 @@ class HomeController extends Controller
     }
     
 
-    /**
-     * Fetch completed appointments for today.
-     */
-/**
- * Fetch completed appointments for today.
- */
+
 public function completedAppointments()
 {
     $today = Carbon::today('Asia/Manila'); // Ensure correct timezone

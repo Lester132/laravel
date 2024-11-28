@@ -14,7 +14,7 @@ class Appointment extends Model
         'service_type',
         'appointment_date',
         'appointment_time',
-        'status'  // Add status field if not already
+        'status' 
     ];
 
     // Define the relationship to the User model

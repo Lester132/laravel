@@ -56,7 +56,7 @@
         @if(\Carbon\Carbon::parse($appointment->appointment_date)->isToday()) 
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $appointment->user->name }}</td>
+                <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name }}</td>
                 <td>{{ $appointment->user->email }}</td>
                 <td>{{ $appointment->user->phone }}</td>
                 <td>{{ $appointment->service_type }}</td>
@@ -115,6 +115,13 @@
 
         setInterval(updateTime, 1000); 
         updateTime(); 
+
+        document.getElementById('appointmentForm').onsubmit = function(event) {
+        event.preventDefault(); // Prevent default submission to handle validations or show a loader
+
+        this.submit();
+    };
+
     </script>
 </body>
 </html>

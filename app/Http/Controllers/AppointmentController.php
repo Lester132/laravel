@@ -12,28 +12,30 @@ class AppointmentController extends Controller
     // Store a new appointment
     public function store(Request $request)
     {
-        // Validate input
+        // Validate input data
         $validated = $request->validate([
-            'service_type' => 'required|string',
+            'service_type' => 'required|array', // Expecting an array for service types
             'appointment_date' => 'required|date',
             'appointment_time' => 'required|string',
         ]);
-
-        // Format the appointment_date to ensure it is in the correct format
-        $appointmentDate = Carbon::createFromFormat('m/d/Y', $validated['appointment_date'])->format('Y-m-d');
-
-        // Store appointment in the database with status set to 'pending' by default
-        Appointment::create([
+    
+        // Process and store the appointment
+        $appointment = Appointment::create([
             'user_id' => auth()->id(),
-            'service_type' => $validated['service_type'],
-            'appointment_date' => $appointmentDate,
+            'service_type' => implode(', ', $validated['service_type']), // Convert array to string
+            'appointment_date' => Carbon::parse($validated['appointment_date'])->format('Y-m-d'),
             'appointment_time' => $validated['appointment_time'],
-            'status' => 'pending', // Default status is 'pending'
+            'status' => 'pending',  // Default status
         ]);
-
-        // Redirect with success message
-        return redirect()->back()->with('success', 'Appointment successfully booked!');
+    
+        // Return a JSON response indicating success
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment successfully booked!',
+            'appointment' => $appointment,
+        ]);
     }
+    
 
     // Display completed appointments
     public function indexCompleted(Request $request)

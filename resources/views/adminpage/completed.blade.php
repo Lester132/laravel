@@ -73,7 +73,7 @@
                                 @foreach($completedAppointments as $index => $appointment)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
-                                        <td>{{ optional($appointment->user)->name ?? 'N/A' }}</td>
+                                        <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name ?? 'N/A' }}</td> 
                                         <td>{{ optional($appointment->user)->email ?? 'N/A' }}</td>
                                         <td>{{ optional($appointment->user)->phone ?? 'N/A' }}</td>
                                         <td>{{ $appointment->service_type }}</td>

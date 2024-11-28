@@ -1,3 +1,7 @@
+<!-- Include CSS and JS for modal and form -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
 <!-- Modal for Appointment Form -->
 <div class="modal fade" id="modalRequest" tabindex="-1" role="dialog" aria-labelledby="modalRequestLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -10,33 +14,31 @@
             </div>
             <div class="modal-body">
                 <!-- Appointment Form -->
-                <form action="{{ route('appointments.store') }}" method="POST">
-                    @csrf <!-- CSRF token for security -->
+                <form id="appointmentForm" action="{{ route('appointments.store') }}" method="POST">
+                    @csrf <!-- CSRF token -->
 
-                    <!-- Service Type Dropdown -->
+                    <!-- Service Type Checkboxes -->
                     <div class="row mb-3">
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="select-wrap">
-                                    <div class="icon"><span class="ion-ios-arrow-down"></span></div>
-                                    <select name="service_type" class="form-control" required>
-                                        <option value="">Service type</option>
-                                        <option value="Dental Consultation">Dental Consultation</option>
-                                        <option value="Tooth Extraction">Tooth Extraction</option>
-                                        <option value="Dental Filling">Dental Filling</option>
-                                        <option value="Dental Crown">Dental Crown</option>
-                                        <option value="Dental Bridge">Dental Bridge</option>
-                                        <option value="Dental Implant">Dental Implant</option>
-                                        <option value="Root Canal Treatment">Root Canal Treatment</option>
-                                        <option value="Dental Cleaning">Dental Cleaning</option>
-                                        <option value="Teeth Whitening">Teeth Whitening</option>
-                                        <option value="Quality Brackets">Quality Brackets</option>
-                                        <option value="Modern Anesthetic">Modern Anesthetic</option>
-                                        <option value="Dental Calculus">Dental Calculus</option>
-                                        <option value="Paradontosis">Paradontosis</option>
-                                        <option value="Tooth Braces">Tooth Braces</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                <label>Service Types (Select all that apply):</label>
+                                <div class="checkbox-wrap" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
+                                    <!-- List of checkboxes for service types -->
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Consultation"> Dental Consultation</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Tooth Extraction"> Tooth Extraction</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Filling"> Dental Filling</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Crown"> Dental Crown</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Bridge"> Dental Bridge</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Implant"> Dental Implant</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Root Canal Treatment"> Root Canal Treatment</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Cleaning"> Dental Cleaning</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Teeth Whitening"> Teeth Whitening</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Quality Brackets"> Quality Brackets</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Modern Anesthetic"> Modern Anesthetic</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Dental Calculus"> Dental Calculus</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Paradontosis"> Paradontosis</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Tooth Braces"> Tooth Braces</label><br>
+                                    <label><input type="checkbox" name="service_type[]" value="Other"> Other</label>
                                 </div>
                             </div>
                         </div>
@@ -46,11 +48,11 @@
                     <div class="row mb-3">
                         <!-- Date Field -->
                         <div class="col-sm-4">
-                <div class="form-group">
-                    <div class="icon"><span class="ion-ios-calendar"></span></div>
-                    <input type="text" name="appointment_date" class="form-control appointment_date" placeholder="Select Date" required>
-                </div>    
-            </div>
+                            <div class="form-group">
+                                <div class="icon"><span class="ion-ios-calendar"></span></div>
+                                <input type="text" name="appointment_date" class="form-control appointment_date" placeholder="Select Date" required>
+                            </div>
+                        </div>
                         <!-- Time Field -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -97,3 +99,77 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript for Notification and Form Submission -->
+<script>
+document.getElementById('appointmentForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(this); // Collect all the form data
+
+    console.log("Form Data Submitted:", Object.fromEntries(formData.entries())); // For debugging
+
+    fetch("{{ route('appointments.store') }}", {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',  // CSRF token for protection
+            'Accept': 'application/json', // Ensure the response is JSON
+        },
+        body: formData, // Send the form data
+    })
+    .then(response => {
+        console.log('Response:', response); // Log raw response for debugging
+
+        if (response.ok) {
+            return response.text(); // Get raw text response (instead of JSON)
+        } else {
+            throw new Error('Network response was not ok');
+        }
+    })
+    .then(text => {
+        console.log('Raw Response Text:', text); // Log the raw response text
+
+        try {
+            const data = JSON.parse(text); // Try to parse it as JSON
+            if (data.success) {
+                alert('Appointment successfully booked!');
+            } else {
+                alert('Error occurred while booking the appointment');
+            }
+        } catch (error) {
+            console.error('Error parsing JSON:', error); // Log the parsing error
+            alert('An error occurred while submitting the form.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error); // Log any error
+        alert('An error occurred while submitting the form.');
+    });
+});
+
+
+
+</script>
+
+<!-- CSS for Mobile-Friendly Styling -->
+<style>
+/* Style for checkboxes */
+.checkbox-wrap {
+    margin-top: 10px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.checkbox-wrap label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+@media screen and (max-width: 600px) {
+    .form-group {
+        font-size: 14px;
+    }
+}
+</style>
