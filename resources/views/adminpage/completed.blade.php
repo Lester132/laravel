@@ -31,26 +31,26 @@
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 style="font-size: 48px; font-weight: bold; color: #343a40;">
-        Completed Appointments
-    </h1>
-    <!-- Filter Dropdown -->
-    <form method="GET" action="{{ url()->current() }}" class="d-flex align-items-center">
-        <label for="filter" class="me-2" style="font-size: 18px; font-weight: 500; color: #555;">Filter By:</label>
-        <select 
-            name="filter" 
-            id="filter" 
-            class="form-select" 
-            style="width: 200px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-size: 16px;" 
-            onchange="this.form.submit()"
-        >
-            <option value="today" {{ request('filter') === 'today' ? 'selected' : '' }}>Today</option>
-            <option value="week" {{ request('filter') === 'week' ? 'selected' : '' }}>This Week</option>
-            <option value="month" {{ request('filter') === 'month' ? 'selected' : '' }}>This Month</option>
-        </select>
-    </form>
-</div>
+                    <h1 style="font-size: 48px; font-weight: bold; color: #343a40;">
+                        Completed Appointments
+                    </h1>
+                    <!-- Filter Dropdown -->
+                    <form method="GET" action="{{ url()->current() }}" class="d-flex align-items-center">
+                    <label for="filter" class="me-2" style="font-size: 18px; font-weight: 500; color: #555;">Filter By:</label>
+                    <select 
+                        name="filter" 
+                        id="filter" 
+                        class="form-select" 
+                        style="width: 200px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-size: 16px;" 
+                        onchange="this.form.submit()"
+                    >
+                        <option value="today" {{ request('filter') === 'today' ? 'selected' : '' }}>Today</option>
+                        <option value="week" {{ request('filter') === 'week' ? 'selected' : '' }}>This Week</option>
+                        <option value="month" {{ request('filter') === 'month' ? 'selected' : '' }}>This Month</option>
+                    </select>
+                </form>
 
+                </div>
 
                 <!-- Table Section -->
                 @if($completedAppointments->isEmpty())
@@ -83,7 +83,9 @@
                                 @endforeach
                             </tbody>
                         </table>
-                        {{ $completedAppointments->links() }} <!-- Add pagination links -->
+                        <div style="padding-bottom: 10px;" class="pagination d-flex justify-content-center">
+                            {{ $completedAppointments->links() }}
+                        </div>
                     </div>
                 @endif
             </div>

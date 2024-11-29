@@ -24,8 +24,8 @@ Route::middleware(['auth', 'verified', AdminMiddleware::class])->group(function 
     Route::get('/completed', [HomeController::class, 'completedAppointments'])->name('completed');
     Route::get('/expired', [HomeController::class, 'expiredAppointments'])->name('expired');
 
-    // Route for completed appointments page
-    Route::get('/appointments/completed', [AppointmentController::class, 'indexCompleted'])->name('appointments.completed');
+    // Route for completed appointments page/appointments/{id}/completed
+    Route::get('/appointments/complete', [AppointmentController::class, 'indexCompleted'])->name('appointments.completed');
 });
 
 // Regular user routes that require authentication and email verification
@@ -52,16 +52,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Appointment management routes for admin
 Route::middleware(['auth', 'verified', AdminMiddleware::class])->group(function () {
-    // Routes for viewing appointments by status
-    Route::get('/appointments/pending', [AppointmentController::class, 'indexPending'])->name('appointments.pending');
-    Route::get('/appointments/completed', [AppointmentController::class, 'indexCompleted'])->name('appointments.completed');
-    Route::get('/appointments/canceled', [AppointmentController::class, 'indexCanceled'])->name('appointments.canceled');
-    Route::get('/appointments/expired', [HomeController::class, 'expiredAppointments'])->name('appointments.expired');
-    
-    // Routes for completing and canceling appointments
+    Route::get('/pending', [HomeController::class, 'pendingpage'])->name('pending'); // Ensure this is consistent
     Route::post('/appointments/{id}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
     Route::post('/appointments/{id}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
 });
+
 
 // If the user is not authenticated, route them to the login page
 Route::get('/login', function () {

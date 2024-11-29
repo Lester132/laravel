@@ -52,41 +52,41 @@
                                 </tr>
                             </thead>
                             <tbody>
-    @foreach($pendingAppointments as $appointment)
-        @if(\Carbon\Carbon::parse($appointment->appointment_date)->isToday()) 
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name }}</td>
-                <td>{{ $appointment->user->email }}</td>
-                <td>{{ $appointment->user->phone }}</td>
-                <td>{{ $appointment->service_type }}</td>
-                <td>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('F j, Y') }}</td>
-                
-                <td>
-                    @php
-                        $appointmentTime = \Carbon\Carbon::parse($appointment->appointment_time);
-                        $hour = $appointmentTime->hour;
-                        $period = ($hour >= 9 && $hour <= 11) ? 'AM' : 'PM';
-                    @endphp
-                    {{ $appointmentTime->format('h:i') }} {{ $period }}
-                </td>
+                                @foreach($pendingAppointments as $appointment)
+                                    @if(\Carbon\Carbon::parse($appointment->appointment_date)->isToday()) 
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name }}</td>
+                                            <td>{{ $appointment->user->email }}</td>
+                                            <td>{{ $appointment->user->phone }}</td>
+                                            <td>{{ $appointment->service_type }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('F j, Y') }}</td>
+                                            
+                                            <td>
+                                                @php
+                                                    $appointmentTime = \Carbon\Carbon::parse($appointment->appointment_time);
+                                                    $hour = $appointmentTime->hour;
+                                                    $period = ($hour >= 9 && $hour <= 11) ? 'AM' : 'PM';
+                                                @endphp
+                                                {{ $appointmentTime->format('h:i') }} {{ $period }}
+                                            </td>
 
-                <td>
-                    <form action="{{ route('completed', $appointment->id) }}" method="POST" style="display: inline;" onsubmit="return confirmAction('complete')">
-                        @csrf
-                        <button class="btn btn-success btn-sm">Complete</button>
-                    </form>
+                                            <td>
+                                            <form action="{{ route('appointments.complete', $appointment->id) }}" method="POST" style="display: inline;" id="complete-form-{{ $appointment->id }}">
+    @csrf
+    <button class="btn btn-success btn-sm" type="submit">Complete</button>
+</form>
 
-                    <form action="{{ route('expired', $appointment->id) }}" method="POST" style="display: inline;" onsubmit="return confirmAction('cancel')">
-                        @csrf
-                        <button class="btn btn-danger btn-sm">Cancel</button>
-                    </form>
-                </td> 
-            </tr>
-        @endif
-    @endforeach
-</tbody>
+<form action="{{ route('appointments.cancel', $appointment->id) }}" method="POST" style="display: inline;" id="cancel-form-{{ $appointment->id }}">
+    @csrf
+    <button class="btn btn-danger btn-sm" type="submit">Cancel</button>
+</form>
 
+                                            </td> 
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
                         </table>
                     </div>
                 @endif
@@ -99,10 +99,32 @@
 
     <!-- JavaScript for confirmation dialog -->
     <script>
-        function confirmAction(action) {
-            let message = action === 'complete' ? 'Are you sure you want to mark this appointment as complete?' : 'Are you sure you want to cancel this appointment?';
-            return confirm(message); // Show confirmation dialog
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    // Function to handle confirmation
+    const confirmAction = (actionType) => {
+        const confirmationMessage = actionType === 'complete'
+            ? 'Are you sure you want to mark this appointment as complete?'
+            : 'Are you sure you want to cancel this appointment?';
+        
+        return confirm(confirmationMessage);
+    };
+
+    // Add event listeners for "Complete" and "Cancel" buttons
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            // Prevent the form submission until confirmation
+            event.preventDefault();
+            
+            const actionType = form.querySelector('button').innerText.toLowerCase();
+            if (confirmAction(actionType)) {
+                form.submit();  // Proceed with the form submission if confirmed
+            }
+        });
+    });
+     // Automatically refresh the page every 30 seconds
+     setInterval(() => {
+            location.reload();  // This will reload the page and fetch the latest data
+        }, 30000); // 30,000 milliseconds = 30 seconds
 
         function updateTime() {
             var currentDate = new Date();
@@ -115,13 +137,10 @@
 
         setInterval(updateTime, 1000); 
         updateTime(); 
+});
 
-        document.getElementById('appointmentForm').onsubmit = function(event) {
-        event.preventDefault(); // Prevent default submission to handle validations or show a loader
-
-        this.submit();
-    };
 
     </script>
+
 </body>
 </html>

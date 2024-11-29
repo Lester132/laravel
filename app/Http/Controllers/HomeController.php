@@ -89,16 +89,44 @@ class HomeController extends Controller
     
 
 
-public function completedAppointments()
-{
-    $today = Carbon::today('Asia/Manila'); // Ensure correct timezone
-    $completedAppointments = Appointment::where('status', 'completed')
-                                    ->whereDate('updated_at', $today)
-                                    ->with('user')
-                                    ->paginate(10);
-return view('adminpage.completed', compact('completedAppointments'));
-
-}
+    public function completedAppointments(Request $request)
+    {
+        // Get the selected filter, defaulting to 'today' if none is selected
+        $filter = $request->get('filter', 'today'); 
+    
+        // Initialize the query for completed appointments
+        $query = Appointment::where('status', 'completed')->with('user');
+        
+        // Apply filtering based on the selected filter
+        switch ($filter) {
+            case 'week':
+                // Get the start and end of the current week (from Monday to Sunday)
+                $startOfWeek = Carbon::now()->startOfWeek(); // Start of the current week (Monday)
+                $endOfWeek = Carbon::now()->endOfWeek(); // End of the current week (Sunday)
+                $query->whereBetween('updated_at', [$startOfWeek, $endOfWeek]);
+                break;
+    
+            case 'month':
+                // Get the start and end of the current month (from 1st to the last day of the month)
+                $startOfMonth = Carbon::now()->startOfMonth(); // Start of the current month
+                $endOfMonth = Carbon::now()->endOfMonth(); // End of the current month
+                $query->whereBetween('updated_at', [$startOfMonth, $endOfMonth]);
+                break;
+    
+            default: // 'today'
+                // Filter by today (only appointments that were completed today)
+                $today = Carbon::today(); // Get today's date
+                $query->whereDate('updated_at', $today);
+                break;
+        }
+    
+        // Paginate results for better UI (10 per page)
+        $completedAppointments = $query->paginate(10);
+        
+        // Return the view with the filtered appointments and selected filter
+        return view('adminpage.completed', compact('completedAppointments', 'filter'));
+    }
+    
 
 public function completedCount()
 {
@@ -115,14 +143,16 @@ public function expiredAppointments()
     $today = \Carbon\Carbon::today('Asia/Manila');
 
     // Fetch appointments that are not accepted or completed and whose date has passed
+    // Use paginate instead of get for pagination
     $expiredAppointments = Appointment::whereNotIn('status', ['accepted', 'completed'])
                                        ->where('appointment_date', '<', $today->endOfDay())  // Make sure to compare with the full day
                                        ->with('user') // Eager load associated user data
-                                       ->get();
+                                       ->paginate(10);  // Paginate results (10 items per page)
 
     // Return the view with the expired appointments data
     return view('adminpage.cancelled', compact('expiredAppointments'));
 }
+
 
 
 

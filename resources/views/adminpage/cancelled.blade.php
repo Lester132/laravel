@@ -40,6 +40,11 @@
             font-weight: bold;
             margin-top: 10px;
         }
+        /* Pagination style */
+        .pagination {
+            justify-content: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body class="sb-nav-fixed">
@@ -49,20 +54,20 @@
         <main>
             <div class="container mt-4">
 
-            <div class="header-info">
+                <div class="header-info">
                     <div>Current Time: <span id="current-time" class="current-time"></span></div>
                     <div>Today’s Date: <span id="current-date"></span></div>
                 </div>
 
-                  <h1 style="font-size: 48px; font-weight: bold; color: #343a40; margin-bottom: 40px;">
-                  Cancelled/Expired Appointments
+                <h1 style="font-size: 48px; font-weight: bold; color: #343a40; margin-bottom: 40px;">
+                    Cancelled/Expired Appointments
                 </h1>
 
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
                         <thead class="text-center">
                             <tr>
-                                 <th>#</th>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Number</th>
@@ -72,11 +77,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($expiredAppointments as $index => $appointment)
+                            @foreach($expiredAppointments as $index => $appointment)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name ?? 'N/A'}}</td>
-
+                                    <td>{{ $expiredAppointments->firstItem() + $index }}</td> <!-- Adjust index based on pagination -->
+                                    <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name ?? 'N/A' }}</td>
                                     <td>{{ optional($appointment->user)->email ?? 'N/A' }}</td>
                                     <td>{{ optional($appointment->user)->phone ?? 'N/A' }}</td>
                                     <td>{{ $appointment->service_type }}</td>
@@ -91,13 +95,20 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @empty
+                            @endforeach
+
+                            @if($expiredAppointments->isEmpty())
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">No cancelled or expired appointments found.</td>
+                                    <td colspan="7" class="text-center text-muted">No cancelled or expired appointments found.</td>
                                 </tr>
-                            @endforelse
+                            @endif
                         </tbody>
                     </table>
+
+                    <!-- Pagination Links -->
+                    <div style="padding-bottom: 10px;" class="pagination d-flex justify-content-center">
+                        {{ $expiredAppointments->links() }}
+                    </div>
                 </div>
             </div>
         </main>
