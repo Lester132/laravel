@@ -1,6 +1,9 @@
 <!-- Include CSS and JS for modal and form -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <!-- Modal for Appointment Form -->
 <div class="modal fade" id="modalRequest" tabindex="-1" role="dialog" aria-labelledby="modalRequestLabel" aria-hidden="true">
@@ -48,11 +51,21 @@
                     <div class="row mb-3">
                         <!-- Date Field -->
                         <div class="col-sm-4">
-                            <div class="form-group">
-                                <div class="icon"><span class="ion-ios-calendar"></span></div>
-                                <input type="text" name="appointment_date" class="form-control appointment_date" placeholder="Select Date" required>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <div class="icon"><span class="ion-ios-calendar"></span></div>
+                        <input 
+                            type="text" 
+                            id="appointment_date" 
+                            name="appointment_date" 
+                            class="form-control" 
+                            placeholder="Select Date" 
+                            required>
+                        <small id="dateError" class="text-danger" style="display: none;">Please select today or a future date.</small>
+                    </div>
+                </div>
+
+
+
                         <!-- Time Field -->
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -100,8 +113,11 @@
     </div>
 </div>
 
+
 <!-- JavaScript for Notification and Form Submission -->
 <script>
+
+    
 document.getElementById('appointmentForm').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent the default form submission
 
@@ -147,6 +163,21 @@ document.getElementById('appointmentForm').addEventListener('submit', function(e
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Flatpickr on the input field
+        flatpickr("#appointment_date", {
+            dateFormat: "Y-m-d", // Set the format of the date
+            minDate: "today",    // Disable past dates by setting the minimum date to today
+            onChange: function(selectedDates, dateStr, instance) {
+                const errorElement = document.getElementById('dateError');
+                if (new Date(dateStr) < new Date()) {
+                    errorElement.style.display = 'block'; // Show error if somehow a past date is selected
+                } else {
+                    errorElement.style.display = 'none'; // Hide error for valid dates
+                }
+            }
+        });
+    });
 
 
 </script>

@@ -23,6 +23,9 @@ Route::middleware(['auth', 'verified', AdminMiddleware::class])->group(function 
     Route::get('/pending', [HomeController::class, 'pendingpage'])->name('pending');
     Route::get('/completed', [HomeController::class, 'completedAppointments'])->name('completed');
     Route::get('/expired', [HomeController::class, 'expiredAppointments'])->name('expired');
+    Route::get('/registered', [HomeController::class, 'showUsers'])->name('registered');
+    Route::get('/users', [HomeController::class, 'showUsers'])->name('users.index');
+    
 
     // Route for completed appointments page/appointments/{id}/completed
     Route::get('/appointments/complete', [AppointmentController::class, 'indexCompleted'])->name('appointments.completed');
@@ -68,3 +71,5 @@ Route::get('/send-test-mail', function () {
     Mail::to('test@example.com')->send(new TestMail());
     return 'Test email sent!';
 });
+
+

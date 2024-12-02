@@ -37,10 +37,10 @@
                 <a class="nav-link {{ request()->routeIs('expired') ? 'active' : '' }}" href="{{ route('expired') }}">Cancelled/Expired Appointments</a>
             </nav>
         </div>
-        <a class="nav-link collapsed {{ request()->routeIs('patients') ? 'active' : '' }}" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-            <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-            Total Registered Patients
-        </a>
+        <a class="nav-link {{ request()->routeIs('registered') ? 'active' : '' }}" href="{{ route('registered') }}">
+        <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div> Total Registered Patients
+</a>
+
         <div class="sb-sidenav-menu-heading">Addons</div>
         <a class="nav-link {{ request()->routeIs('charts') ? 'active' : '' }}" href="charts.html">
             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>

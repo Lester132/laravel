@@ -160,6 +160,42 @@ public function completed()
 {
     return view('adminpage.completed'); // Ensure the contact.contactpage view exists
 }
+
+public function showUsers(Request $request)
+{
+    // Check if the user is authenticated and has the admin role
+    if (!Auth::check() || Auth::user()->usertype !== 'admin') {
+        return redirect()->route('home'); // Redirect unauthorized users
+    }
+
+    // Get and trim search input
+    $search = trim($request->input('search'));
+
+    // Split the search term by space to separate first and last names (if both are provided)
+    $searchTerms = explode(' ', $search);
+
+    // Initialize the query to fetch users with the usertype 'user'
+    $query = User::where('usertype', 'user');
+
+    // Check if there are exactly two search terms (first name + last name)
+    if (count($searchTerms) === 2) {
+        // Fetch users with both first and last name matching
+        $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
+              ->whereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[1]) . '%']);
+    } elseif (count($searchTerms) === 1) {
+        // Fetch users with either first or last name matching
+        $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
+              ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%']);
+    }
+
+    // Execute the query and get the results
+    $users = $query->withCount('appointments')->get();
+
+    // Return the view with the filtered users
+    return view('adminpage.registered', compact('users'));
+}
+
+
     
 }
  
