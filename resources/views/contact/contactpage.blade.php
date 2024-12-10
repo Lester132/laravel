@@ -5,6 +5,9 @@
     
     <!-- css -->
 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" rel="stylesheet">
+
+
     @include('home.homecss')
 
   </head>
@@ -73,22 +76,26 @@
           </div>
           <div class="w-100"></div>
           <div class="col-md-3">
-            <p><span>Address:</span> <a href="https://maps.app.goo.gl/2zNJs6eqdvCgNqVT7">
+            <p><span><i class="fa-solid fa-map-pin"></i> Address:</span> <a href="https://maps.app.goo.gl/2zNJs6eqdvCgNqVT7">
             Rosario Dental Clinic Cristina Bldg., Mc Arthur Highway, San Vicente, Urdaneta, Philippines
           </a>
           </p>
           </div>
           <div class="col-md-3">
-            <p><span>Phone:</span> <a href="tel://0905 456 0625">
+            <p><span><i class="fa-solid fa-phone"></i> Phone:</span> <a href="tel://0905 456 0625">
             0905 456 0625 </a></p>
           </div>
           <div class="col-md-3">
-            <p><span>Email:</span> <a href="mailto:info@yoursite.com">Xample@gmail.com</a></p>
+            <p><span><i class="fas fa-envelope"></i>
+            Email: </span> <a href="mailto:info@yoursite.com">sample@gmail.com</a></p>
           </div>
           <div class="col-md-3">
-            <p><span>Website</span> <a href="https://www.facebook.com/profile.php?id=61560554867743">Rosario Dental Clinic</a></p>
-          </div>
-        </div>
+  <p>
+    <span><i class="fab fa-facebook-square"></i> facebook: </span> 
+    <a href="https://www.facebook.com/profile.php?id=61560554867743">Rosario Dental Clinic</a>
+  </p>
+</div>
+
        
       </div>
     </section>

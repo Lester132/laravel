@@ -16,6 +16,32 @@
             font-weight: bold;
             margin-top: 10px;
         }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-form {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Card Layout for Table */
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #343a40;
+        }
+        .card-body {
+            padding: 20px;
+        }
     </style>
 </head>
 <body class="sb-nav-fixed">
@@ -30,61 +56,74 @@
                     <div>Today’s Date: <span id="current-date"></span></div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 style="font-size: 48px; font-weight: bold; color: #343a40;">
-                        Completed Appointments
-                    </h1>
-                    <!-- Filter Dropdown -->
-                    <form method="GET" action="{{ url()->current() }}" class="d-flex align-items-center">
-                    <label for="filter" class="me-2" style="font-size: 18px; font-weight: 500; color: #555;">Filter By:</label>
-                    <select 
-                        name="filter" 
-                        id="filter" 
-                        class="form-select" 
-                        style="width: 200px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-size: 16px;" 
-                        onchange="this.form.submit()"
-                    >
-                        <option value="today" {{ request('filter') === 'today' ? 'selected' : '' }}>Today</option>
-                        <option value="week" {{ request('filter') === 'week' ? 'selected' : '' }}>This Week</option>
-                        <option value="month" {{ request('filter') === 'month' ? 'selected' : '' }}>This Month</option>
-                    </select>
-                </form>
+                <div class="header-section mb-4">
+                    <h1 style="font-size: 40px; font-weight: bold; color: #343a40;">Completed Appointments</h1>
+                    <!-- Filter Form -->
+                    <form method="GET" action="{{ url()->current() }}" class="filter-form">
+                        <label for="start_date" class="me-2" style="font-size: 18px; font-weight: 500; color: #555;">From:</label>
+                        <input 
+                            type="date" 
+                            name="start_date" 
+                            id="start_date" 
+                            class="form-control me-2" 
+                            style="width: 180px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-size: 16px;"
+                            value="{{ request('start_date') }}"
+                        >
 
+                        <label for="end_date" class="me-2" style="font-size: 18px; font-weight: 500; color: #555;">To:</label>
+                        <input 
+                            type="date" 
+                            name="end_date" 
+                            id="end_date" 
+                            class="form-control me-2" 
+                            style="width: 180px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-size: 16px;"
+                            value="{{ request('end_date') }}"
+                        >
+
+                        <button type="submit" class="btn btn-primary" style="border-radius: 10px; box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1); font-size: 16px;">Apply</button>
+                    </form>
                 </div>
 
-                <!-- Table Section -->
+                <!-- Card for Completed Appointments Table -->
                 @if($completedAppointments->isEmpty())
                     <p>No completed appointments for the selected period.</p>
                 @else
-                    <div class="table-responsive mt-4">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Service Type</th>
-                                    <th>Completion Date</th>
-                                    <th>Completion Time</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($completedAppointments as $index => $appointment)
-                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name ?? 'N/A' }}</td> 
-                                        <td>{{ optional($appointment->user)->email ?? 'N/A' }}</td>
-                                        <td>{{ optional($appointment->user)->phone ?? 'N/A' }}</td>
-                                        <td>{{ $appointment->service_type }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($appointment->updated_at)->format('F d, Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($appointment->updated_at)->format('h:i A') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <div style="padding-bottom: 10px;" class="pagination d-flex justify-content-center">
-                            {{ $completedAppointments->links() }}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                        Users List 
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Service Type</th>
+                                            <th>Completion Date</th>
+                                            <th>Completion Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($completedAppointments as $index => $appointment)
+                                            <tr>
+                                                <td>{{ $index + 1 }}</td>
+                                                <td>{{ $appointment->user->first_name }} {{ $appointment->user->middle_name }} {{ $appointment->user->last_name ?? 'N/A' }}</td> 
+                                                <td>{{ optional($appointment->user)->email ?? 'N/A' }}</td>
+                                                <td>{{ optional($appointment->user)->phone ?? 'N/A' }}</td>
+                                                <td>{{ $appointment->service_type }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($appointment->updated_at)->format('F d, Y') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($appointment->updated_at)->format('h:i A') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div style="padding-bottom: 10px;" class="pagination d-flex justify-content-center">
+                                    {{ $completedAppointments->appends(['start_date' => request('start_date'), 'end_date' => request('end_date')])->links() }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif

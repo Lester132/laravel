@@ -2,7 +2,6 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <!-- Modal for Appointment Form -->
@@ -26,7 +25,6 @@
                             <div class="form-group">
                                 <label>Service Types (Select all that apply):</label>
                                 <div class="checkbox-wrap" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f9f9f9;">
-                                    <!-- List of checkboxes for service types -->
                                     <label><input type="checkbox" name="service_type[]" value="Dental Consultation"> Dental Consultation</label><br>
                                     <label><input type="checkbox" name="service_type[]" value="Tooth Extraction"> Tooth Extraction</label><br>
                                     <label><input type="checkbox" name="service_type[]" value="Dental Filling"> Dental Filling</label><br>
@@ -51,20 +49,18 @@
                     <div class="row mb-3">
                         <!-- Date Field -->
                         <div class="col-sm-4">
-                    <div class="form-group">
-                        <div class="icon"><span class="ion-ios-calendar"></span></div>
-                        <input 
-                            type="text" 
-                            id="appointment_date" 
-                            name="appointment_date" 
-                            class="form-control" 
-                            placeholder="Select Date" 
-                            required>
-                        <small id="dateError" class="text-danger" style="display: none;">Please select today or a future date.</small>
-                    </div>
-                </div>
-
-
+                            <div class="form-group">
+                                <div class="icon"><span class="ion-ios-calendar"></span></div>
+                                <input 
+                                    type="text" 
+                                    id="appointment_date" 
+                                    name="appointment_date" 
+                                    class="form-control" 
+                                    placeholder="Select Date" 
+                                    required>
+                                <small id="dateError" class="text-danger" style="display: none;">Please select today or a future date.</small>
+                            </div>
+                        </div>
 
                         <!-- Time Field -->
                         <div class="col-sm-6">
@@ -113,94 +109,112 @@
     </div>
 </div>
 
-
 <!-- JavaScript for Notification and Form Submission -->
 <script>
-
-    
-document.getElementById('appointmentForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the default form submission
-
-    const formData = new FormData(this); // Collect all the form data
-
-    console.log("Form Data Submitted:", Object.fromEntries(formData.entries())); // For debugging
-
-    fetch("{{ route('appointments.store') }}", {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',  // CSRF token for protection
-            'Accept': 'application/json', // Ensure the response is JSON
-        },
-        body: formData, // Send the form data
-    })
-    .then(response => {
-        console.log('Response:', response); // Log raw response for debugging
-
-        if (response.ok) {
-            return response.text(); // Get raw text response (instead of JSON)
-        } else {
-            throw new Error('Network response was not ok');
-        }
-    })
-    .then(text => {
-        console.log('Raw Response Text:', text); // Log the raw response text
-
-        try {
-            const data = JSON.parse(text); // Try to parse it as JSON
-            if (data.success) {
-                alert('Appointment successfully booked!');
-            } else {
-                alert('Error occurred while booking the appointment');
-            }
-        } catch (error) {
-            console.error('Error parsing JSON:', error); // Log the parsing error
-            alert('An error occurred while submitting the form.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error); // Log any error
-        alert('An error occurred while submitting the form.');
-    });
-});
-
 document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Flatpickr on the input field
-        flatpickr("#appointment_date", {
-            dateFormat: "Y-m-d", // Set the format of the date
-            minDate: "today",    // Disable past dates by setting the minimum date to today
-            onChange: function(selectedDates, dateStr, instance) {
-                const errorElement = document.getElementById('dateError');
-                if (new Date(dateStr) < new Date()) {
-                    errorElement.style.display = 'block'; // Show error if somehow a past date is selected
-                } else {
-                    errorElement.style.display = 'none'; // Hide error for valid dates
+    const availableTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+
+    // Initialize Flatpickr on the input field
+    flatpickr("#appointment_date", {
+        dateFormat: "Y-m-d", // Set the format of the date
+        minDate: "today",    // Disable past dates by setting the minimum date to today
+        disable: [
+            function (date) {
+                const currentDate = new Date();
+                // If the date is today, check the available time slots
+                if (date.toDateString() === currentDate.toDateString()) {
+                    const currentHour = currentDate.getHours();
+                    // Check if any available time slot is valid
+                    const hasValidTime = availableTimes.some(time => {
+                        const [hour] = time.split(":").map(Number);
+                        return hour > currentHour;
+                    });
+                    return !hasValidTime; // Disable today if no valid time slots
                 }
+                return false; // Do not disable other dates
             }
+        ],
+        onChange: function (selectedDates, dateStr, instance) {
+            const errorElement = document.getElementById('dateError');
+            const timeField = document.querySelector("select[name='appointment_time']");
+
+            const currentDate = new Date();
+            const selectedDate = new Date(dateStr);
+
+            if (selectedDate.toDateString() === currentDate.toDateString()) {
+                // If the selected date is today, limit the time options
+                limitTimeOptions(currentDate, timeField);
+            } else {
+                // Enable all time options if the date is in the future
+                enableAllTimeOptions(timeField);
+            }
+
+            // Display error if a past date is selected (additional safeguard)
+            if (selectedDate < currentDate) {
+                errorElement.style.display = 'block';
+            } else {
+                errorElement.style.display = 'none';
+            }
+        }
+    });
+
+    // Limit time options based on the current time
+    function limitTimeOptions(currentDate, timeField) {
+        const currentHour = currentDate.getHours();
+        const options = timeField.options;
+
+        // Loop through time options
+        for (let i = 0; i < options.length; i++) {
+            const optionTime = parseInt(options[i].value.split(":")[0], 10); // Extract hour (24-hour format)
+            if (optionTime < currentHour) {
+                options[i].disabled = true; // Disable past options
+            } else {
+                options[i].disabled = false; // Enable future options
+            }
+        }
+    }
+
+    // Enable all time options
+    function enableAllTimeOptions(timeField) {
+        const options = timeField.options;
+        for (let i = 0; i < options.length; i++) {
+            options[i].disabled = false;
+        }
+    }
+
+    // Add event listener for form submission
+    document.getElementById('appointmentForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Proceed with form submission using AJAX (fetch)
+        const formData = new FormData(this);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content'); // Get CSRF token
+
+        fetch("{{ route('appointments.store') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken, // Include CSRF token in headers
+            },
+            body: formData
+        })
+        .then(response => response.json()) // Parse the response as JSON
+        .then(data => {
+            if (data.success) {
+                // Show a confirmation dialog (instead of alert)
+                if (window.confirm("Appointment successfully booked! Do you want to proceed with another appointment?")) {
+                    // If user clicks "OK", you can reset the form or perform other actions
+                    document.getElementById('appointmentForm').reset();
+                } else {
+                    // If user clicks "Cancel", just hide the modal and reset form
+                    $('#modalRequest').modal('hide'); // Hide the modal
+                }
+            } else {
+                alert('There was an error with your submission.'); // Show error message if needed
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error); // Log any error that occurs
         });
     });
-
-
+});
 </script>
-
-<!-- CSS for Mobile-Friendly Styling -->
-<style>
-/* Style for checkboxes */
-.checkbox-wrap {
-    margin-top: 10px;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-}
-
-.checkbox-wrap label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-}
-
-@media screen and (max-width: 600px) {
-    .form-group {
-        font-size: 14px;
-    }
-}
-</style>

@@ -1,16 +1,21 @@
+
+@push('head')
+<link rel="icon" href="{{ asset('images/fav_icon.png') }}" type="image/png">
+@endpush
 <x-guest-layout>
+    
     <x-authentication-card>
         <x-slot name="logo">
-            <x-authentication-card-logo />
+            <img src="{{ asset('images/nav_icon.png') }}" alt="Logo" style="width: 250px; height: auto;">
         </x-slot>
 
         <x-validation-errors class="mb-4" />
 
-        @session('status')
+        @if (session('status'))
             <div class="mb-4 font-medium text-sm text-green-600">
-                {{ $value }}
+                {{ session('status') }}
             </div>
-        @endsession
+        @endif
 
         <form method="POST" action="{{ route('login') }}">
             @csrf

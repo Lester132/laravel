@@ -16,21 +16,26 @@ class HomeController extends Controller
      */
     public function pendingpage()
     {
-        // Ensure only admin can access this page
         if (Auth::check() && Auth::user()->usertype === 'admin') {
-            // Fetch all appointments that are 'pending'
-            $pendingAppointments = Appointment::where('status', 'pending')
-                                                ->with('user')  // Eager load the associated user
-                                                ->get();
-
-            // Pass the appointments to the view
-            return view('adminpage.pending', compact('pendingAppointments'));
+            // Fetch today's and tomorrow's pending appointments
+            $pendingAppointmentsToday = Appointment::where('status', 'pending')
+                ->whereDate('appointment_date', \Carbon\Carbon::today()) // Filter by today's date
+                ->with('user')
+                ->paginate(10);
+    
+            $pendingAppointmentsTomorrow = Appointment::where('status', 'pending')
+                ->whereDate('appointment_date', \Carbon\Carbon::tomorrow()) // Filter by tomorrow's date
+                ->with('user')
+                ->paginate(10);
+    
+            return view('adminpage.pending', compact('pendingAppointmentsToday', 'pendingAppointmentsTomorrow'));
         }
-
-        // Redirect unauthorized users to the home page
-        return redirect()->route('home');
+    
+        return redirect()->route('home'); // Redirect if not authorized
     }
-
+    
+    
+    
     /**
      * Render the homepage for regular users.
      */
@@ -91,41 +96,33 @@ class HomeController extends Controller
 
     public function completedAppointments(Request $request)
     {
-        // Get the selected filter, defaulting to 'today' if none is selected
-        $filter = $request->get('filter', 'today'); 
+        // Get the selected filter (start and end dates)
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
     
         // Initialize the query for completed appointments
         $query = Appointment::where('status', 'completed')->with('user');
-        
-        // Apply filtering based on the selected filter
-        switch ($filter) {
-            case 'week':
-                // Get the start and end of the current week (from Monday to Sunday)
-                $startOfWeek = Carbon::now()->startOfWeek(); // Start of the current week (Monday)
-                $endOfWeek = Carbon::now()->endOfWeek(); // End of the current week (Sunday)
-                $query->whereBetween('updated_at', [$startOfWeek, $endOfWeek]);
-                break;
     
-            case 'month':
-                // Get the start and end of the current month (from 1st to the last day of the month)
-                $startOfMonth = Carbon::now()->startOfMonth(); // Start of the current month
-                $endOfMonth = Carbon::now()->endOfMonth(); // End of the current month
-                $query->whereBetween('updated_at', [$startOfMonth, $endOfMonth]);
-                break;
-    
-            default: // 'today'
-                // Filter by today (only appointments that were completed today)
-                $today = Carbon::today(); // Get today's date
-                $query->whereDate('updated_at', $today);
-                break;
+        // Apply filtering based on provided date range
+        if ($startDate && $endDate) {
+            $query->whereBetween('updated_at', [Carbon::parse($startDate)->startOfDay(), Carbon::parse($endDate)->endOfDay()]);
+        } elseif ($startDate) {
+            $query->whereDate('updated_at', Carbon::parse($startDate)->format('Y-m-d'));
+        } elseif ($endDate) {
+            $query->whereDate('updated_at', Carbon::parse($endDate)->format('Y-m-d'));
+        } else {
+            // Default to today's appointments if no date is selected
+            $today = Carbon::today();
+            $query->whereDate('updated_at', $today);
         }
     
         // Paginate results for better UI (10 per page)
         $completedAppointments = $query->paginate(10);
-        
-        // Return the view with the filtered appointments and selected filter
-        return view('adminpage.completed', compact('completedAppointments', 'filter'));
+    
+        // Return the view with the filtered appointments and selected dates
+        return view('adminpage.completed', compact('completedAppointments', 'startDate', 'endDate'));
     }
+    
     
 
 public function completedCount()
@@ -163,37 +160,46 @@ public function completed()
 
 public function showUsers(Request $request)
 {
-    // Check if the user is authenticated and has the admin role
+    // Ensure only authenticated admins can access this method
     if (!Auth::check() || Auth::user()->usertype !== 'admin') {
         return redirect()->route('home'); // Redirect unauthorized users
     }
 
-    // Get and trim search input
+    // Trim and sanitize search input
     $search = trim($request->input('search'));
 
-    // Split the search term by space to separate first and last names (if both are provided)
-    $searchTerms = explode(' ', $search);
-
-    // Initialize the query to fetch users with the usertype 'user'
+    // Initialize query to fetch users with usertype 'user'
     $query = User::where('usertype', 'user');
 
-    // Check if there are exactly two search terms (first name + last name)
-    if (count($searchTerms) === 2) {
-        // Fetch users with both first and last name matching
-        $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
-              ->whereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[1]) . '%']);
-    } elseif (count($searchTerms) === 1) {
-        // Fetch users with either first or last name matching
-        $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
-              ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%']);
+    // If a search term is provided, filter by name
+    if ($search) {
+        $searchTerms = explode(' ', $search); // Split search input into terms
+
+        // Handle cases based on the number of terms
+        $query->where(function ($query) use ($searchTerms) {
+            if (count($searchTerms) === 2) {
+                // Search by both first and last name
+                $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
+                      ->whereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[1]) . '%']);
+            } else {
+                // Search by either first name or last name
+                $query->whereRaw('LOWER(first_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%'])
+                      ->orWhereRaw('LOWER(last_name) LIKE ?', ['%' . strtolower($searchTerms[0]) . '%']);
+            }
+        });
     }
 
-    // Execute the query and get the results
-    $users = $query->withCount('appointments')->get();
+    // Retrieve the users with the count of their completed appointments
+    $users = $query->withCount(['appointments as completed_appointments' => function ($query) {
+        $query->where('status', 'completed');
+    }])->get();
 
-    // Return the view with the filtered users
+    // Return the view with the user data
     return view('adminpage.registered', compact('users'));
 }
+
+
+
 
 
     

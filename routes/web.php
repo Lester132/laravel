@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TestMail;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\PreventAdminMiddleware;
+
 
 // Public Routes (Accessible to all users without login, except admins)
 Route::get('/', [HomeController::class, 'homepage'])->name('home')->middleware(PreventAdminMiddleware::class);
@@ -29,7 +31,21 @@ Route::middleware(['auth', 'verified', AdminMiddleware::class])->group(function 
 
     // Route for completed appointments page/appointments/{id}/completed
     Route::get('/appointments/complete', [AppointmentController::class, 'indexCompleted'])->name('appointments.completed');
+    
+    // Edit user form route
+Route::get('/users/{id}/edit', [AppointmentController::class, 'edit'])->name('users.edit');
+
+// Update user route
+Route::put('/users/{id}', [AppointmentController::class, 'update'])->name('users.update');
+
+
+
+Route::get('/users/{id}/history', [AppointmentController::class, 'userHistory'])->name('users.history');
+
+
+    Route::delete('/users/{id}', [AppointmentController::class, 'deleteUser'])->name('users.destroy');
 });
+
 
 // Regular user routes that require authentication and email verification
 Route::middleware(['auth', 'verified', PreventAdminMiddleware::class])->group(function () {
@@ -51,6 +67,10 @@ Route::post('/email/resend', function () {
 // Authenticated and Protected Routes (for Regular Users)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+   
+
+
+    
 });
 
 // Appointment management routes for admin
@@ -71,5 +91,9 @@ Route::get('/send-test-mail', function () {
     Mail::to('test@example.com')->send(new TestMail());
     return 'Test email sent!';
 });
+
+
+
+
 
 

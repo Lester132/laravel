@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'usertype',
         'phone',
+        'status',
     ];
 
     /**
@@ -72,4 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Appointment::class);
     }
+
+    
+
 }
