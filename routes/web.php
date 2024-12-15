@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\PreventAdminMiddleware;
+use App\Http\Controllers\ContactController;
 
 
 // Public Routes (Accessible to all users without login, except admins)
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'verified', AdminMiddleware::class])->group(function 
     Route::get('/expired', [HomeController::class, 'expiredAppointments'])->name('expired');
     Route::get('/registered', [HomeController::class, 'showUsers'])->name('registered');
     Route::get('/users', [HomeController::class, 'showUsers'])->name('users.index');
+    
     
 
     // Route for completed appointments page/appointments/{id}/completed
@@ -91,6 +93,10 @@ Route::get('/send-test-mail', function () {
     Mail::to('test@example.com')->send(new TestMail());
     return 'Test email sent!';
 });
+
+// Routes for displaying the form and handling form submission
+Route::get('/contentupdate', [ContactController::class, 'showUpdateForm'])->name('adminpage.contentupdate');
+Route::post('/contentupdate', [ContactController::class, 'updateContactInfo'])->name('adminpage.updateContactInfo');
 
 
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Appointment; 
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\ContactInfo;
 
 class HomeController extends Controller
 {
@@ -65,8 +66,13 @@ class HomeController extends Controller
      */
     public function contactpage()
     {
-        return view('contact.contactpage');
+        // Retrieve the contact information from the database
+        $contactInfo = ContactInfo::first();
+    
+        // Pass the data to the view
+        return view('contact.contactpage', compact('contactInfo'));
     }
+    
 
     /**
      * Render the admin dashboard.
@@ -76,15 +82,23 @@ class HomeController extends Controller
         if (Auth::check() && Auth::user()->usertype === 'admin') {
             $userCount = User::where('usertype', 'user')->count();
             $pendingCount = Appointment::where('status', 'pending')
-                                       ->whereDate('appointment_date', Carbon::today('Asia/Manila'))
-                                       ->count();
+            ->where(function ($query) {
+                $query->whereDate('appointment_date', Carbon::today('Asia/Manila'))
+                      ->orWhereDate('appointment_date', Carbon::tomorrow('Asia/Manila'));
+            })
+            ->count();
+        
             $completedCount = Appointment::where('status', 'completed')
                                           ->whereDate('updated_at', Carbon::today('Asia/Manila'))
                                           ->count();
 
-            $expiredAppointmentsCount = Appointment::whereNotIn('status', ['accepted', 'completed'])
-                                          ->where('appointment_date', '<', \Carbon\Carbon::today('Asia/Manila')->endOfDay())
-                                          ->count(); // Count of expired appointments                           
+                                          $expiredAppointmentsCount = Appointment::whereIn('status', ['canceled']) // Include canceled appointments
+                                          ->orWhere(function ($query) {
+                                              $query->whereNotIn('status', ['accepted', 'completed'])
+                                                    ->where('appointment_date', '<', \Carbon\Carbon::today('Asia/Manila')->endOfDay()); // Count past appointments not accepted or completed
+                                          })
+                                          ->count(); // Count the results
+                           
     
             return view('adminpage.dashboard', compact('userCount', 'pendingCount', 'completedCount', 'expiredAppointmentsCount'));
         }
@@ -116,8 +130,8 @@ class HomeController extends Controller
             $query->whereDate('updated_at', $today);
         }
     
-        // Paginate results for better UI (10 per page)
-        $completedAppointments = $query->paginate(10);
+        // Apply sorting by latest completed first and paginate results
+        $completedAppointments = $query->orderBy('updated_at', 'desc')->paginate(10);
     
         // Return the view with the filtered appointments and selected dates
         return view('adminpage.completed', compact('completedAppointments', 'startDate', 'endDate'));
@@ -139,16 +153,21 @@ public function expiredAppointments()
     // Get the current date with timezone consideration
     $today = \Carbon\Carbon::today('Asia/Manila');
 
-    // Fetch appointments that are not accepted or completed and whose date has passed
-    // Use paginate instead of get for pagination
-    $expiredAppointments = Appointment::whereNotIn('status', ['accepted', 'completed'])
-                                       ->where('appointment_date', '<', $today->endOfDay())  // Make sure to compare with the full day
+    
+    $expiredAppointments = Appointment::whereIn('status', ['canceled']) // Include canceled appointments
+                                       ->orWhere(function ($query) use ($today) {
+                                           $query->whereNotIn('status', ['accepted', 'completed'])
+                                                 ->where('appointment_date', '<', $today->endOfDay()); // Filter past non-accepted/non-completed appointments
+                                       })
                                        ->with('user') // Eager load associated user data
+                                       ->orderBy('appointment_date', 'desc') // Order by appointment_date descending
                                        ->paginate(10);  // Paginate results (10 items per page)
 
     // Return the view with the expired appointments data
     return view('adminpage.cancelled', compact('expiredAppointments'));
 }
+
+
 
 
 

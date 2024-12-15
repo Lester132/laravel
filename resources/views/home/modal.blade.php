@@ -41,6 +41,7 @@
                                     <label><input type="checkbox" name="service_type[]" value="Tooth Braces"> Tooth Braces</label><br>
                                     <label><input type="checkbox" name="service_type[]" value="Other"> Other</label>
                                 </div>
+                                <small id="serviceTypeError" class="text-danger" style="display: none;">You can select a maximum of 3 service types.</small>
                             </div>
                         </div>
                     </div>
@@ -50,7 +51,7 @@
                         <!-- Date Field -->
                         <div class="col-sm-4">
                             <div class="form-group">
-                                <div class="icon"><span class="ion-ios-calendar"></span></div>
+                               DATE:
                                 <input 
                                     type="text" 
                                     id="appointment_date" 
@@ -65,7 +66,7 @@
                         <!-- Time Field -->
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <div class="icon"><span class="ion-ios-clock"></span></div>
+                                TIME:
                                 <select name="appointment_time" class="form-control" required>
                                     <option value="">Select Time</option>
                                     <option value="08:00">8:00 AM</option>
@@ -113,6 +114,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const availableTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+    const serviceCheckboxes = document.querySelectorAll('input[name="service_type[]"]');
+    const serviceTypeError = document.getElementById('serviceTypeError');
+    const dateError = document.getElementById('dateError');
+    const timeField = document.querySelector("select[name='appointment_time']");
 
     // Initialize Flatpickr on the input field
     flatpickr("#appointment_date", {
@@ -135,9 +140,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         ],
         onChange: function (selectedDates, dateStr, instance) {
-            const errorElement = document.getElementById('dateError');
-            const timeField = document.querySelector("select[name='appointment_time']");
-
             const currentDate = new Date();
             const selectedDate = new Date(dateStr);
 
@@ -151,11 +153,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Display error if a past date is selected (additional safeguard)
             if (selectedDate < currentDate) {
-                errorElement.style.display = 'block';
+                dateError.style.display = 'block';
             } else {
-                errorElement.style.display = 'none';
+                dateError.style.display = 'none';
             }
         }
+    });
+
+    // Limit the number of selections to 3
+    serviceCheckboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const selectedCount = document.querySelectorAll('input[name="service_type[]"]:checked').length;
+
+            if (selectedCount > 3) {
+                // If more than 3 checkboxes are selected, disable the remaining checkboxes
+                this.checked = false;
+                serviceTypeError.style.display = 'block'; // Show error message
+            } else {
+                // Hide error message if less than or equal to 3 checkboxes are selected
+                serviceTypeError.style.display = selectedCount > 3 ? 'block' : 'none';
+            }
+        });
     });
 
     // Limit time options based on the current time
@@ -184,7 +202,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add event listener for form submission
     document.getElementById('appointmentForm').addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default form submission
+        // Validate the service type checkboxes (max 3 selected)
+        const selectedServices = document.querySelectorAll('input[name="service_type[]"]:checked');
+        if (selectedServices.length > 3) {
+            event.preventDefault(); // Prevent form submission
+            serviceTypeError.style.display = 'block'; // Show error message
+        } else {
+            serviceTypeError.style.display = 'none'; // Hide error message
+        }
+
+        // Prevent default form submission
+        event.preventDefault();
 
         // Proceed with form submission using AJAX (fetch)
         const formData = new FormData(this);

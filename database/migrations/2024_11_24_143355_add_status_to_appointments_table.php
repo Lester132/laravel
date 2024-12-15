@@ -9,15 +9,16 @@ class AddStatusToAppointmentsTable extends Migration
     public function up()
     {
         Schema::table('appointments', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'completed', 'canceled'])->default('pending');
+            // Add the 'status' column with the default value as 'new'
+            $table->enum('status', ['new', 'pending', 'completed', 'canceled'])->default('new');
         });
     }
 
     public function down()
     {
         Schema::table('appointments', function (Blueprint $table) {
+            // Drop the 'status' column if the migration is rolled back
             $table->dropColumn('status');
         });
     }
 }
-

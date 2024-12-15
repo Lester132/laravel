@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    @include('adminpage.header') <!-- Includes the header part -->
+    @include('adminpage.header') 
     <style>
         .table th, .table td {
             vertical-align: middle;

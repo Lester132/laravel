@@ -15,7 +15,7 @@
                         </ol>
                         <div class="row">
                          <!-- Total Registered Patients -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-6 col-md-6">
         <div class="card bg-primary text-white mb-4">
             <div class="card-body">
                 <h1 class="fw-bold">Total Registered Patients:</h1>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Pending Appointments -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-6 col-md-6">
         <div class="card bg-warning text-white mb-4">
             <div class="card-body">
                 <h1 class="fw-bold">Pending Appointments:</h1>
@@ -43,7 +43,7 @@
     </div>
 
     <!-- Completed Appointments -->
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-6 col-md-6">
         <div class="card bg-success text-white mb-4">
             <div class="card-body">
                 <h1 class="fw-bold">Completed Appointments:</h1>
@@ -55,9 +55,10 @@
             </div>
         </div>
         </div>
+        
            <!-- expired/cancelled Appointments -->
 
-           <div class="col-xl-3 col-md-6">
+           <div class="col-xl-6 col-md-6">
             <div class="card bg-danger text-white mb-4">
                 <div class="card-body">
                     <h1 class="fw-bold" style="font-size: .86rem;">Expired/Cancelled Appointments:</h1>

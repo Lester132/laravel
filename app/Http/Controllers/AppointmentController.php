@@ -87,6 +87,9 @@ class AppointmentController extends Controller
         return redirect()->route('pending')->with('success', 'Appointment marked as completed!');
     }
 
+
+
+    
     // Cancel an appointment
     public function cancel($id)
     {
@@ -98,8 +101,6 @@ class AppointmentController extends Controller
         return redirect()->route('pending')->with('success', 'Appointment canceled successfully!');
     }
 
-     // Edit user information
-  // In UserController
 
 
  

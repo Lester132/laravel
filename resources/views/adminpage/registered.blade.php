@@ -105,7 +105,7 @@
                                 <table class="table table-bordered table-striped">
                                 <thead class="table-dark">
                                 <tr>
-                                    <th>ID</th>
+                                    <th>#</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone Number</th>
@@ -116,7 +116,7 @@
                             <tbody>
                                 @foreach($users as $user)
                                     <tr>
-                                        <td>{{ $user->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                         <td>{{ $user->first_name }} {{ $user->middle_name }} {{ $user->last_name }}</td>
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->phone }}</td>
@@ -137,7 +137,7 @@
                                             <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                <button type="submit" class="btn btn-danger btn-sm">DELETE</button>
                                             </form>
 
                                             <button class="btn btn-info btn-sm historyUserBtn"
@@ -302,35 +302,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch history data
     function fetchHistory(userId, page) {
-        fetch(`/users/${userId}/history?page=${page}`)
-            .then(response => response.json())
-            .then(data => {
-                // Set account created date
-                document.getElementById('historyAccountCreated').innerText = data.account_created;
+    fetch(`/users/${userId}/history?page=${page}`)
+        .then(response => response.json())
+        .then(data => {
+            // Set account created date
+            document.getElementById('historyAccountCreated').innerText = data.account_created;
 
-                // Populate table with history data
-                const historyTableBody = document.getElementById('historyTableBody');
-                historyTableBody.innerHTML = '';
-
-                if (data.history.length === 0) {
-                    historyTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No appointment history found.</td></tr>';
-                } else {
-                    data.history.forEach(appointment => {
-                        const row = `
-                            <tr>
-                                <td>${appointment.service_type}</td>
-                                <td>${appointment.date}</td>
-                                <td>${appointment.status}</td>
-                            </tr>
-                        `;
-                        historyTableBody.innerHTML += row;
-                    });
-                }
-
-                // Update pagination links
-                renderPaginationLinks(userId, data.current_page, data.total_pages);
+            // Filter history to show only canceled, expired, or completed appointments
+            const filteredHistory = data.history.filter(appointment => {
+                return ['canceled', 'expired', 'completed'].includes(appointment.status);
             });
-    }
+
+            // Populate table with filtered history data
+            const historyTableBody = document.getElementById('historyTableBody');
+            historyTableBody.innerHTML = '';
+
+            if (filteredHistory.length === 0) {
+                historyTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No appointment history found.</td></tr>';
+            } else {
+                filteredHistory.forEach(appointment => {
+                    const row = `
+                        <tr>
+                            <td>${appointment.service_type}</td>
+                            <td>${appointment.date}</td>
+                            <td>${appointment.status}</td>
+                        </tr>
+                    `;
+                    historyTableBody.innerHTML += row;
+                });
+            }
+
+            // Update pagination links
+            renderPaginationLinks(userId, data.current_page, data.total_pages);
+        });
+}
+
 
     // Render pagination links
     function renderPaginationLinks(userId, currentPage, totalPages) {

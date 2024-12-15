@@ -32,9 +32,9 @@
         </a>
         <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
             <nav class="sb-sidenav-menu-nested nav">
-                <a class="nav-link {{ request()->routeIs('pending') ? 'active' : '' }}" href="{{ route('pending') }}">Pending Appointments</a>
-                <a class="nav-link {{ request()->routeIs('completed') ? 'active' : '' }}" href="{{ route('completed') }}">Completed Appointments</a>
-                <a class="nav-link {{ request()->routeIs('expired') ? 'active' : '' }}" href="{{ route('expired') }}">Cancelled/Expired Appointments</a>
+                <a class="nav-link {{ request()->routeIs('pending') ? 'active' : '' }}" href="{{ route('pending') }}">Pending </a>
+                <a class="nav-link {{ request()->routeIs('completed') ? 'active' : '' }}" href="{{ route('completed') }}">Completed</a>
+                <a class="nav-link {{ request()->routeIs('expired') ? 'active' : '' }}" href="{{ route('expired') }}">Cancelled/Expired</a>
             </nav>
         </div>
         <a class="nav-link {{ request()->routeIs('registered') ? 'active' : '' }}" href="{{ route('registered') }}">
@@ -42,14 +42,12 @@
 </a>
 
         <div class="sb-sidenav-menu-heading">Addons</div>
-        <a class="nav-link {{ request()->routeIs('charts') ? 'active' : '' }}" href="charts.html">
-            <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-            Charts
-        </a>
-        <a class="nav-link {{ request()->routeIs('tables') ? 'active' : '' }}" href="tables.html">
-            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-            Tables
-        </a>
+        <a class="nav-link {{ request()->routeIs('adminpage.contentupdate') ? 'active' : '' }}" href="{{ route('adminpage.contentupdate') }}">
+    <div class="sb-nav-link-icon"><i class="fa fa-wrench" aria-hidden="true"></i></div>
+    Content Update Panel
+</a>
+
+    
     </div>
 </div>
 
